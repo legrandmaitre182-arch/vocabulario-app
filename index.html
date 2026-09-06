@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#D4A5A5">
+  <meta name="description" content="Aprenda uma palavra nova em outro idioma todos os dias">
+  <title>Palavra do Dia</title>
+
+  <link rel="manifest" href="manifest.json">
+
+  <!-- iOS: tela inicial / modo standalone -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Vocabulário">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --rose-pastel-dark: #F4D4D8;
+      --rose-pastel-light: #FFF5F7;
+      --rose-gold: #D4A5A5;
+      --rose-gold-dark: #C48B92;
+      --rose-gold-light: #E8C4CC;
+      --blush-pink: #F2D7DD;
+      --text-dark: #6B5B5B;
+      --text-light: #9B8B8B;
+    }
+
+    html, body { width: 100%; height: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+      background: var(--rose-pastel-light);
+      color: var(--text-dark);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior-y: none;
+    }
+
+    #root { min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: linear-gradient(135deg, #FFF5F7 0%, #F4D4D8 100%);
+      border-bottom: 1px solid var(--rose-gold-light);
+      padding: calc(20px + env(safe-area-inset-top)) 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.1);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--rose-gold-dark);
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .bell-btn {
+      background: var(--rose-pastel-dark);
+      border: 1.5px solid var(--rose-gold);
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .bell-btn:active { background: var(--rose-gold-light); transform: scale(0.95); }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--rose-gold-light);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 14px 16px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--text-light);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tab.active { color: var(--rose-gold-dark); border-bottom-color: var(--rose-gold); }
+
+    .container {
+      padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .section { margin-bottom: 28px; }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--rose-gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .word-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
+      border: 1.5px solid var(--rose-gold-light);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(212, 165, 165, 0.08);
+    }
+
+    .word-label {
+      font-size: 11px;
+      color: var(--rose-gold);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .word-title {
+      font-size: 44px;
+      font-weight: 300;
+      margin: 12px 0;
+      color: var(--rose-gold-dark);
+      letter-spacing: -0.5px;
+      text-wrap: balance;
+    }
+
+    .word-translation { font-size: 15px; color: var(--text-light); font-style: italic; margin-top: 10px; }
+
+    .example-box {
+      background: linear-gradient(135deg, var(--blush-pink) 0%, var(--rose-pastel-dark) 100%);
+      border-radius: 12px;
+      padding: 18px;
+      margin: 22px 0;
+      text-align: left;
+      border: 1px solid var(--rose-gold-light);
+    }
+
+    .example-label {
+      font-size: 11px;
+      color: var(--rose-gold-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .example-text { font-size: 15px; color: var(--text-dark); font-style: italic; line-height: 1.7; }
+
+    .btn {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--rose-gold-light);
+      background: var(--rose-pastel-dark);
+      color: var(--text-dark);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:active { background: var(--rose-gold-light); transform: scale(0.98); }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--rose-gold) 0%, var(--rose-gold-dark) 100%);
+      color: #FFFFFF;
+      border-color: var(--rose-gold-dark);
+    }
+
+    .btn.primary:active { background: linear-gradient(135deg, var(--rose-gold-dark) 0%, #B87A85 100%); }
+
+    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--rose-pastel-dark) 0%, var(--blush-pink) 100%);
+      border: 1.5px solid var(--rose-gold-light);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.08);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--rose-gold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .stat-number {
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--rose-gold-dark);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--rose-gold-light);
+      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--text-dark);
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    select:focus { outline: none; border-color: var(--rose-gold); box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.18); }
+
+    .toggle-card, .install-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
+      border: 1.5px solid var(--rose-gold-light);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.08);
+    }
+
+    .toggle-label { margin: 0; font-weight: 600; font-size: 14px; color: var(--rose-gold-dark); }
+    .toggle-desc { margin: 6px 0 0; font-size: 12px; color: var(--text-light); }
+
+    .toggle-switch {
+      background: var(--rose-pastel-dark);
+      border: 1.5px solid var(--rose-gold-light);
+      border-radius: 14px;
+      width: 52px;
+      min-width: 52px;
+      height: 30px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .toggle-switch.active {
+      background: linear-gradient(135deg, var(--rose-gold) 0%, var(--rose-gold-dark) 100%);
+      border-color: var(--rose-gold-dark);
+    }
+
+    .toggle-knob {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      background: #FFFFFF;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.4s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-switch.active .toggle-knob { left: 24px; }
+
+    .install-btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--rose-gold-dark);
+      background: linear-gradient(135deg, var(--rose-gold) 0%, var(--rose-gold-dark) 100%);
+      color: #FFFFFF;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .install-btn:active { transform: scale(0.97); }
+
+    .words-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .word-item {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
+      border: 1.5px solid var(--rose-gold-light);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .word-item:active { background: var(--blush-pink); border-color: var(--rose-gold); transform: scale(0.98); }
+
+    .word-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .word-item-title { font-size: 15px; font-weight: 600; margin: 0; color: var(--rose-gold-dark); }
+    .word-item-translation { font-size: 12px; color: var(--text-light); margin: 6px 0 0; font-style: italic; }
+    .word-item-date { font-size: 11px; color: var(--text-light); text-align: right; white-space: nowrap; }
+
+    .word-item-details {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--rose-gold-light);
+      display: none;
+    }
+
+    .word-item-details.show { display: block; }
+
+    .word-item-details-label {
+      font-size: 11px;
+      color: var(--rose-gold);
+      margin: 0 0 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .word-item-example { font-size: 14px; margin: 0; font-style: italic; color: var(--text-dark); line-height: 1.6; }
+
+    .empty-state {
+      background: linear-gradient(135deg, var(--rose-pastel-dark) 0%, var(--blush-pink) 100%);
+      border-radius: 16px;
+      padding: 36px 28px;
+      text-align: center;
+      border: 1.5px solid var(--rose-gold-light);
+    }
+
+    .empty-text { color: var(--text-dark); margin: 0; font-size: 15px; line-height: 1.7; font-weight: 500; }
+
+    .about-card {
+      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
+      border: 1.5px solid var(--rose-gold-light);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.08);
+    }
+
+    .about-card p { font-size: 13px; color: var(--text-light); margin: 0; line-height: 1.7; }
+
+    :focus-visible { outline: 2px solid var(--rose-gold-dark); outline-offset: 2px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    class VocabularyApp {
+      constructor() {
+        this.selectedLanguage = this.get('selectedLanguage') || 'español';
+        this.learnedWords = JSON.parse(this.get('learnedWords') || '[]');
+        this.notificationEnabled = this.get('notificationEnabled') === 'true';
+        this.todayWord = null;
+        this.activeTab = 'today';
+        this.installPrompt = null;
+
+        this.vocabularyData = {
+          español: [
+            { word: 'Serendipidad', translation: 'Serendipity', example: 'Encontré un café hermoso por serendipidad mientras caminaba.' },
+            { word: 'Nostalgia', translation: 'Nostalgia', example: 'La música me trae nostalgia de mis años universitarios.' },
+            { word: 'Melancólico', translation: 'Melancholic', example: 'El atardecer tiene un tono melancólico muy hermoso.' },
+            { word: 'Ensoñación', translation: 'Daydream', example: 'Perdí el tiempo en ensoñación durante la clase.' },
+            { word: 'Susurro', translation: 'Whisper', example: 'Escuché un susurro en la noche.' },
+            { word: 'Ensimismado', translation: 'Lost in thought', example: 'Estaba ensimismado y no escuché tu pregunta.' },
+            { word: 'Efímero', translation: 'Ephemeral', example: 'La belleza de las flores es efímera.' },
+            { word: 'Celestial', translation: 'Heavenly', example: 'El cielo tenía un color celestial al atardecer.' }
+          ],
+          english: [
+            { word: 'Serendipity', translation: 'Serendipidade', example: 'Finding that perfect book was pure serendipity.' },
+            { word: 'Ephemeral', translation: 'Efêmero', example: 'Cherry blossoms have an ephemeral beauty.' },
+            { word: 'Melancholy', translation: 'Melancolia', example: 'There is a melancholy in autumn that I find peaceful.' },
+            { word: 'Wanderlust', translation: 'Paixão por viajar', example: 'My wanderlust drives me to explore new countries.' },
+            { word: 'Eloquent', translation: 'Eloquente', example: 'Her speech was eloquent and moving.' },
+            { word: 'Serenity', translation: 'Serenidade', example: 'I find serenity in the quiet of the morning.' },
+            { word: 'Perspicacious', translation: 'Perspicaz', example: 'His perspicacious observations surprised everyone.' },
+            { word: 'Ubiquitous', translation: 'Ubíquo', example: 'Smartphones have become ubiquitous in modern society.' }
+          ],
+          french: [
+            { word: 'Flâner', translation: 'Passear sem rumo', example: 'J\'aime flâner dans les rues de Paris.' },
+            { word: 'Dépaysement', translation: 'Sensação de estar fora do lugar', example: 'J\'ai ressenti un dépaysement en arrivant à Tokyo.' },
+            { word: 'Mélancolie', translation: 'Melancolia', example: 'La mélancolie de l\'automne est captivante.' },
+            { word: 'Sérendipité', translation: 'Serendipidade', example: 'C\'est par sérendipité que nous nous sommes rencontrés.' },
+            { word: 'Bienveillance', translation: 'Benevolência', example: 'Elle traite tout le monde avec bienveillance.' },
+            { word: 'Lumière', translation: 'Luz', example: 'La lumière du matin est magnifique.' },
+            { word: 'Éphémère', translation: 'Efêmero', example: 'La beauté des fleurs est éphémère.' },
+            { word: 'Chuchoter', translation: 'Sussurrar', example: 'Il aime chuchoter des secrets à son frère.' }
+          ],
+          portuguese: [
+            { word: 'Saudade', translation: 'Longing/Nostalgia', example: 'Sinto saudade do Brasil quando estou longe.' },
+            { word: 'Melancolia', translation: 'Melancholy', example: 'A melancolia toma conta no outono.' },
+            { word: 'Serendipidade', translation: 'Serendipity', example: 'Foi por serendipidade que encontrei meu melhor amigo.' },
+            { word: 'Efêmero', translation: 'Ephemeral', example: 'A beleza das flores de cerejeira é efêmera.' },
+            { word: 'Nostalgia', translation: 'Nostalgia', example: 'A nostalgia da infância vem em forma de música.' },
+            { word: 'Ensimesmado', translation: 'Lost in thought', example: 'Ele estava ensimesmado e não ouviu minha pergunta.' },
+            { word: 'Deslumbramento', translation: 'Amazement', example: 'Olhei com deslumbramento para as estrelas.' },
+            { word: 'Alvorecer', translation: 'Dawn', example: 'Acordamos cedo para ver o alvorecer na praia.' }
+          ]
+        };
+
+        this.init();
+      }
+
+      get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+      set(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+      init() {
+        this.setDailyWord();
+        this.render();
+        this.registerServiceWorker();
+        this.watchInstallPrompt();
+      }
+
+      registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+          });
+        }
+      }
+
+      watchInstallPrompt() {
+        window.addEventListener('beforeinstallprompt', event => {
+          event.preventDefault();
+          this.installPrompt = event;
+          this.render();
+        });
+        window.addEventListener('appinstalled', () => {
+          this.installPrompt = null;
+          this.render();
+        });
+      }
+
+      isStandalone() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      }
+
+      isIOS() {
+        return /iphone|ipad|ipod/i.test(navigator.userAgent);
+      }
+
+      async installApp() {
+        if (!this.installPrompt) return;
+        this.installPrompt.prompt();
+        await this.installPrompt.userChoice;
+        this.installPrompt = null;
+        this.render();
+      }
+
+      setDailyWord() {
+        const today = new Date().toDateString();
+        const lastDate = this.get('lastWordDate');
+        const words = this.vocabularyData[this.selectedLanguage];
+
+        if (lastDate !== today) {
+          this.todayWord = words[Math.floor(Math.random() * words.length)];
+          this.set('todayWord', JSON.stringify(this.todayWord));
+          this.set('lastWordDate', today);
+        } else {
+          const saved = this.get('todayWord');
+          this.todayWord = saved ? JSON.parse(saved) : words[0];
+        }
+      }
+
+      markAsLearned() {
+        if (!this.todayWord) return;
+        const isLearned = this.learnedWords.some(w => w.word === this.todayWord.word);
+        if (isLearned) {
+          this.learnedWords = this.learnedWords.filter(w => w.word !== this.todayWord.word);
+        } else {
+          this.learnedWords.push({ ...this.todayWord, learnedDate: new Date().toLocaleDateString('pt-BR') });
+        }
+        this.set('learnedWords', JSON.stringify(this.learnedWords));
+        this.render();
+      }
+
+      async toggleNotifications() {
+        this.notificationEnabled = !this.notificationEnabled;
+        this.set('notificationEnabled', this.notificationEnabled);
+        if (this.notificationEnabled && 'Notification' in window && Notification.permission === 'default') {
+          try { await Notification.requestPermission(); } catch (e) {}
+        }
+        this.render();
+      }
+
+      changeLanguage(lang) {
+        this.selectedLanguage = lang;
+        this.set('selectedLanguage', lang);
+        this.set('lastWordDate', '');
+        this.setDailyWord();
+        this.render();
+      }
+
+      changeTab(tab) {
+        this.activeTab = tab;
+        this.render();
+      }
+
+      toggleWordDetails(word) {
+        const details = document.querySelector('[data-word-details="' + word + '"]');
+        if (details) details.classList.toggle('show');
+      }
+
+      async sendNotification() {
+        if (!this.todayWord || !('Notification' in window)) return;
+
+        let permission = Notification.permission;
+        if (permission === 'default') {
+          try { permission = await Notification.requestPermission(); } catch (e) { return; }
+        }
+        if (permission !== 'granted') return;
+
+        const payload = {
+          type: 'show-notification',
+          title: 'Palavra do Dia: ' + this.todayWord.word,
+          body: this.todayWord.example
+        };
+
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          registration.showNotification(payload.title, {
+            body: payload.body,
+            icon: 'icon-192.png',
+            badge: 'icon-192.png',
+            tag: 'vocabulary-daily'
+          });
+        } catch (e) {
+          try { new Notification(payload.title, { body: payload.body, tag: 'vocabulary-daily' }); } catch (err) {}
+        }
+      }
+
+      escape(text) {
+        return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      installSection() {
+        if (this.isStandalone()) {
+          return '<div class="install-card"><div>' +
+                 '<p class="toggle-label">✓ App instalado</p>' +
+                 '<p class="toggle-desc">Você está usando o Palavra do Dia direto da tela inicial.</p>' +
+                 '</div></div>';
+        }
+
+        if (this.installPrompt) {
+          return '<div class="install-card"><div>' +
+                 '<p class="toggle-label">Instalar na tela inicial</p>' +
+                 '<p class="toggle-desc">Abre em tela cheia e funciona sem internet.</p>' +
+                 '</div>' +
+                 '<button class="install-btn" onclick="app.installApp()">Instalar</button>' +
+                 '</div>';
+        }
+
+        if (this.isIOS()) {
+          return '<div class="install-card"><div>' +
+                 '<p class="toggle-label">Instalar na tela inicial</p>' +
+                 '<p class="toggle-desc">No Safari: toque em Compartilhar (⬆️) e escolha "Adicionar à Tela de Início".</p>' +
+                 '</div></div>';
+        }
+
+        return '<div class="install-card"><div>' +
+               '<p class="toggle-label">Instalar na tela inicial</p>' +
+               '<p class="toggle-desc">No Chrome do celular: menu (⋮) → "Adicionar à tela inicial".</p>' +
+               '</div></div>';
+      }
+
+      render() {
+        const root = document.getElementById('root');
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const stats = {
+          totalLearned: this.learnedWords.length,
+          thisWeek: this.learnedWords.filter(w => {
+            const parts = String(w.learnedDate || '').split('/');
+            const wordDate = parts.length === 3
+              ? new Date(parts[2], parts[1] - 1, parts[0])
+              : new Date(w.learnedDate);
+            return wordDate >= oneWeekAgo;
+          }).length
+        };
+
+        const isLearned = this.todayWord && this.learnedWords.some(w => w.word === this.todayWord.word);
+
+        root.innerHTML = `
+          <header>
+            <div class="header-top">
+              <h1>Palavra do Dia</h1>
+              <button class="bell-btn" onclick="app.sendNotification()" title="Ver a palavra como notificação" aria-label="Ver a palavra como notificação">🔔</button>
+            </div>
+            <div class="tabs">
+              <button class="tab ${this.activeTab === 'today' ? 'active' : ''}" onclick="app.changeTab('today')">Hoje</button>
+              <button class="tab ${this.activeTab === 'learned' ? 'active' : ''}" onclick="app.changeTab('learned')">Aprendidas (${this.learnedWords.length})</button>
+              <button class="tab ${this.activeTab === 'settings' ? 'active' : ''}" onclick="app.changeTab('settings')">Ajustes</button>
+            </div>
+          </header>
+
+          <div class="container">
+            <div class="tab-content ${this.activeTab === 'today' ? 'active' : ''}">
+              <div class="section">
+                <div class="stats">
+                  <div class="stat-card">
+                    <p class="stat-label">Total Aprendido</p>
+                    <p class="stat-number">${stats.totalLearned}</p>
+                  </div>
+                  <div class="stat-card">
+                    <p class="stat-label">Esta Semana</p>
+                    <p class="stat-number">${stats.thisWeek}</p>
+                  </div>
+                </div>
+              </div>
+
+              ${this.todayWord ? `
+                <div class="word-card">
+                  <p class="word-label">✨ Palavra do Dia</p>
+                  <h2 class="word-title">${this.escape(this.todayWord.word)}</h2>
+                  <p class="word-translation">${this.escape(this.todayWord.translation)}</p>
+
+                  <div class="example-box">
+                    <p class="example-label">💭 Exemplo</p>
+                    <p class="example-text">"${this.escape(this.todayWord.example)}"</p>
+                  </div>
+
+                  <button class="btn ${isLearned ? 'primary' : ''}" onclick="app.markAsLearned()">
+                    ${isLearned ? '✓ Já aprendi' : 'Marcar como aprendida'}
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="tab-content ${this.activeTab === 'learned' ? 'active' : ''}">
+              ${this.learnedWords.length === 0 ? `
+                <div class="empty-state">
+                  <p class="empty-text">💫 Ainda nenhuma palavra aprendida.<br/>Comece marcando a palavra do dia!</p>
+                </div>
+              ` : `
+                <div class="words-list">
+                  ${[...this.learnedWords].reverse().map(word => `
+                    <div class="word-item" onclick="app.toggleWordDetails('${this.escape(word.word)}')">
+                      <div class="word-item-header">
+                        <div>
+                          <p class="word-item-title">${this.escape(word.word)}</p>
+                          <p class="word-item-translation">${this.escape(word.translation)}</p>
+                        </div>
+                        <div class="word-item-date">${this.escape(word.learnedDate || '')}</div>
+                      </div>
+                      <div class="word-item-details" data-word-details="${this.escape(word.word)}">
+                        <p class="word-item-details-label">Exemplo:</p>
+                        <p class="word-item-example">"${this.escape(word.example)}"</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+
+            <div class="tab-content ${this.activeTab === 'settings' ? 'active' : ''}">
+              <div class="section">
+                <p class="section-title">📱 App</p>
+                ${this.installSection()}
+              </div>
+
+              <div class="section">
+                <p class="section-title">🌍 Idioma</p>
+                <div class="form-group">
+                  <select onchange="app.changeLanguage(this.value)" aria-label="Idioma do vocabulário">
+                    <option value="español" ${this.selectedLanguage === 'español' ? 'selected' : ''}>Español</option>
+                    <option value="english" ${this.selectedLanguage === 'english' ? 'selected' : ''}>English</option>
+                    <option value="french" ${this.selectedLanguage === 'french' ? 'selected' : ''}>Français</option>
+                    <option value="portuguese" ${this.selectedLanguage === 'portuguese' ? 'selected' : ''}>Português</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="section">
+                <p class="section-title">🔔 Notificações</p>
+                <div class="toggle-card">
+                  <div>
+                    <p class="toggle-label">Permitir notificações</p>
+                    <p class="toggle-desc">${this.notificationEnabled ? '✓ Permitidas — toque no sino para ver a palavra como notificação' : 'Desativadas'}</p>
+                  </div>
+                  <button class="toggle-switch ${this.notificationEnabled ? 'active' : ''}" onclick="app.toggleNotifications()" aria-label="Permitir notificações">
+                    <div class="toggle-knob"></div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="section">
+                <p class="section-title">ℹ️ Sobre</p>
+                <div class="about-card">
+                  <p>📚 <strong>Palavra do Dia</strong><br/>Aprenda uma palavra nova todos os dias em múltiplos idiomas.<br/><br/>Versão 2.0 · Design Rosé Pastel ✨<br/>Funciona offline depois da primeira abertura.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    const app = new VocabularyApp();
+  </script>
+</body>
+</html>
