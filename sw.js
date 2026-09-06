@@ -1,11 +1,13 @@
 // Service worker do Palavra do Dia
-// Estratégia: cache-first para o app shell, com atualização em segundo plano.
+// Estratégia: cache-first com revalidação em segundo plano.
+// A nova versão só assume quando a pessoa toca em "Atualizar" no app.
 
-const CACHE = 'palavra-do-dia-v1';
+const CACHE = 'palavra-do-dia-v2';
 
 const APP_SHELL = [
   './',
   './index.html',
+  './vocab.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
@@ -15,9 +17,7 @@ const APP_SHELL = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE)
-      .then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(cache => cache.addAll(APP_SHELL))
   );
 });
 
@@ -32,15 +32,17 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  if (new URL(req.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      const network = fetch(event.request)
+    caches.match(req).then(cached => {
+      const network = fetch(req)
         .then(response => {
           if (response && response.status === 200 && response.type === 'basic') {
             const copy = response.clone();
-            caches.open(CACHE).then(cache => cache.put(event.request, copy));
+            caches.open(CACHE).then(cache => cache.put(req, copy));
           }
           return response;
         })
@@ -51,16 +53,20 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Permite que a página peça uma notificação ao service worker
-// (necessário no Android/iOS quando o app está instalado na tela inicial).
 self.addEventListener('message', event => {
   const data = event.data || {};
+
+  if (data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+
   if (data.type === 'show-notification') {
     self.registration.showNotification(data.title || 'Palavra do Dia', {
       body: data.body || '',
       icon: './icon-192.png',
       badge: './icon-192.png',
-      tag: 'vocabulary-daily'
+      tag: data.tag || 'palavra-do-dia'
     });
   }
 });

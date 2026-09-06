@@ -1,15 +1,18 @@
 {
   "name": "Palavra do Dia",
   "short_name": "Vocabulário",
-  "description": "Aprenda uma palavra nova todos os dias em múltiplos idiomas",
+  "description": "Aprenda vocabulário novo todos os dias, no seu ritmo",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FFF5F7",
-  "theme_color": "#D4A5A5",
+  "background_color": "#FBF7F3",
+  "theme_color": "#F3E7E2",
   "lang": "pt-BR",
-  "categories": ["education", "lifestyle"],
+  "categories": [
+    "education",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "icon-192.png",

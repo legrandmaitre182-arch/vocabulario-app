@@ -3,739 +3,977 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#D4A5A5">
-  <meta name="description" content="Aprenda uma palavra nova em outro idioma todos os dias">
+  <meta name="theme-color" content="#F3E7E2">
+  <meta name="description" content="Aprenda vocabulário novo todos os dias, no seu ritmo">
   <title>Palavra do Dia</title>
 
   <link rel="manifest" href="manifest.json">
-
-  <!-- iOS: tela inicial / modo standalone -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Vocabulário">
+  <meta name="apple-mobile-web-app-title" content="Palavra do Dia">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --rose-pastel-dark: #F4D4D8;
-      --rose-pastel-light: #FFF5F7;
-      --rose-gold: #D4A5A5;
-      --rose-gold-dark: #C48B92;
-      --rose-gold-light: #E8C4CC;
-      --blush-pink: #F2D7DD;
-      --text-dark: #6B5B5B;
-      --text-light: #9B8B8B;
+      --ivory:      #FBF7F3;
+      --blush:      #F4E9E4;
+      --rose:       #E7D2CD;
+      --rose-deep:  #CFAEA9;
+      --mauve:      #9C777A;
+      --gold-deep:  #8A6733;
+      --gold:       #B08D57;
+      --gold-light: #EBD9AC;
+      --ink:        #443733;
+      --ink-soft:   #8B7871;
+      --hairline:   #E2D2CB;
+
+      --serif: 'Cormorant Garamond', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+      --sans: 'Jost', 'Futura', 'Avenir Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+      --shell: 480px;
     }
 
-    html, body { width: 100%; height: 100%; }
+    html, body { width: 100%; min-height: 100%; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
-      background: var(--rose-pastel-light);
-      color: var(--text-dark);
+      font-family: var(--sans);
+      font-weight: 300;
+      background: var(--ivory);
+      color: var(--ink);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
       overscroll-behavior-y: none;
     }
 
     #root { min-height: 100vh; display: flex; flex-direction: column; }
 
+    .shell { width: 100%; max-width: var(--shell); margin: 0 auto; }
+
+    /* ---------- Gold ---------- */
+    .gold-text {
+      background-image: linear-gradient(96deg,
+        var(--gold-deep) 0%, var(--gold) 26%, #D8BE86 46%,
+        #E4CE9A 50%, #D8BE86 54%, var(--gold) 74%, var(--gold-deep) 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: sheen 9s linear infinite;
+    }
+
+    @keyframes sheen { to { background-position: 250% center; } }
+
+    .gold-rule {
+      height: 1px; border: 0;
+      background-image: linear-gradient(90deg,
+        transparent, var(--rose-deep) 18%, var(--gold) 50%, var(--rose-deep) 82%, transparent);
+    }
+
+    /* ---------- Header ---------- */
     header {
-      background: linear-gradient(135deg, #FFF5F7 0%, #F4D4D8 100%);
-      border-bottom: 1px solid var(--rose-gold-light);
-      padding: calc(20px + env(safe-area-inset-top)) 20px 0;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.1);
+      position: sticky; top: 0; z-index: 60;
+      background: linear-gradient(180deg, var(--blush) 0%, #F8EFEA 100%);
+      border-bottom: 1px solid var(--hairline);
+      padding-top: env(safe-area-inset-top);
     }
 
-    .header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
+    /* motivo geométrico próprio: losangos finos, bem discretos */
+    .header-motif {
+      height: 22px;
+      background-image:
+        repeating-linear-gradient(45deg, var(--gold) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(-45deg, var(--gold) 0 1px, transparent 1px 22px);
+      opacity: 0.13;
     }
 
-    h1 {
-      font-size: 28px;
-      font-weight: 500;
-      color: var(--rose-gold-dark);
-      margin: 0;
-      letter-spacing: 0.5px;
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 6px 22px 14px;
     }
 
-    .bell-btn {
-      background: var(--rose-pastel-dark);
-      border: 1.5px solid var(--rose-gold);
-      border-radius: 12px;
-      width: 44px;
-      height: 44px;
-      font-size: 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
+    .brand { display: flex; flex-direction: column; gap: 1px; }
+
+    .brand-name {
+      font-family: var(--serif);
+      font-size: 27px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.15;
     }
 
-    .bell-btn:active { background: var(--rose-gold-light); transform: scale(0.95); }
-
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid var(--rose-gold-light);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+    .brand-sub {
+      font-size: 8.5px; font-weight: 400; letter-spacing: 3.4px;
+      text-transform: uppercase; color: var(--mauve);
     }
+
+    .bell {
+      flex-shrink: 0;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: transparent;
+      border: 1px solid var(--rose-deep);
+      color: var(--gold-deep);
+      font-family: var(--serif); font-size: 17px;
+      display: grid; place-items: center;
+      cursor: pointer; transition: background 0.35s ease, border-color 0.35s ease;
+    }
+
+    .bell:hover, .bell:focus-visible { background: rgba(176,141,87,0.09); border-color: var(--gold); }
+    .bell:active { background: rgba(176,141,87,0.18); }
+
+    nav.tabs { display: flex; border-top: 1px solid var(--hairline); }
 
     .tab {
-      flex: 1;
-      padding: 14px 16px;
-      background: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      color: var(--text-light);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-      white-space: nowrap;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      flex: 1; padding: 13px 6px 12px;
+      background: none; border: 0; border-bottom: 1.5px solid transparent;
+      font-family: var(--sans); font-size: 10px; font-weight: 400;
+      letter-spacing: 2.1px; text-transform: uppercase;
+      color: var(--ink-soft); cursor: pointer;
+      transition: color 0.3s ease, border-color 0.3s ease;
     }
 
-    .tab.active { color: var(--rose-gold-dark); border-bottom-color: var(--rose-gold); }
+    .tab[aria-selected="true"] { color: var(--gold-deep); border-bottom-color: var(--gold); }
 
-    .container {
-      padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+    /* ---------- Layout ---------- */
+    main { flex: 1; padding: 26px 22px calc(40px + env(safe-area-inset-bottom)); }
+
+    .panel { display: none; }
+    .panel.active { display: block; animation: rise 0.5s cubic-bezier(.2,.7,.3,1) both; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    .eyebrow {
+      font-size: 9px; font-weight: 400; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--mauve);
     }
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .section { margin-bottom: 28px; }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--rose-gold);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 14px;
+    /* ---------- Contador ---------- */
+    .ledger {
+      display: flex; align-items: stretch;
+      border: 1px solid var(--hairline); border-radius: 2px;
+      background: linear-gradient(180deg, #FFFDFB, var(--blush));
+      margin-bottom: 26px;
     }
 
-    .word-card {
-      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
-      border: 1.5px solid var(--rose-gold-light);
-      border-radius: 16px;
-      padding: 28px 24px;
-      margin-bottom: 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(212, 165, 165, 0.08);
+    .ledger-cell { flex: 1; padding: 15px 10px 13px; text-align: center; }
+    .ledger-cell + .ledger-cell { border-left: 1px solid var(--hairline); }
+
+    .ledger-n {
+      font-family: var(--serif); font-size: 30px; font-weight: 400; line-height: 1.1;
+      font-variant-numeric: tabular-nums; margin-top: 3px;
     }
 
-    .word-label {
-      font-size: 11px;
-      color: var(--rose-gold);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      font-weight: 700;
-    }
-
-    .word-title {
-      font-size: 44px;
-      font-weight: 300;
-      margin: 12px 0;
-      color: var(--rose-gold-dark);
-      letter-spacing: -0.5px;
-      text-wrap: balance;
-    }
-
-    .word-translation { font-size: 15px; color: var(--text-light); font-style: italic; margin-top: 10px; }
-
-    .example-box {
-      background: linear-gradient(135deg, var(--blush-pink) 0%, var(--rose-pastel-dark) 100%);
-      border-radius: 12px;
-      padding: 18px;
-      margin: 22px 0;
-      text-align: left;
-      border: 1px solid var(--rose-gold-light);
-    }
-
-    .example-label {
-      font-size: 11px;
-      color: var(--rose-gold-dark);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .example-text { font-size: 15px; color: var(--text-dark); font-style: italic; line-height: 1.7; }
-
-    .btn {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 12px;
-      border: 1.5px solid var(--rose-gold-light);
-      background: var(--rose-pastel-dark);
-      color: var(--text-dark);
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: inherit;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn:active { background: var(--rose-gold-light); transform: scale(0.98); }
-
-    .btn.primary {
-      background: linear-gradient(135deg, var(--rose-gold) 0%, var(--rose-gold-dark) 100%);
-      color: #FFFFFF;
-      border-color: var(--rose-gold-dark);
-    }
-
-    .btn.primary:active { background: linear-gradient(135deg, var(--rose-gold-dark) 0%, #B87A85 100%); }
-
-    .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 24px; }
-
-    .stat-card {
-      background: linear-gradient(135deg, var(--rose-pastel-dark) 0%, var(--blush-pink) 100%);
-      border: 1.5px solid var(--rose-gold-light);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.08);
-    }
-
-    .stat-label {
-      font-size: 11px;
-      color: var(--rose-gold);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .stat-number {
-      font-size: 32px;
-      font-weight: 400;
-      color: var(--rose-gold-dark);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .form-group { margin-bottom: 18px; }
-
-    select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1.5px solid var(--rose-gold-light);
-      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
-      font-size: 16px;
-      cursor: pointer;
-      color: var(--text-dark);
-      font-family: inherit;
-      font-weight: 500;
-    }
-
-    select:focus { outline: none; border-color: var(--rose-gold); box-shadow: 0 0 0 3px rgba(212, 165, 165, 0.18); }
-
-    .toggle-card, .install-card {
-      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
-      border: 1.5px solid var(--rose-gold-light);
-      border-radius: 16px;
-      padding: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.08);
-    }
-
-    .toggle-label { margin: 0; font-weight: 600; font-size: 14px; color: var(--rose-gold-dark); }
-    .toggle-desc { margin: 6px 0 0; font-size: 12px; color: var(--text-light); }
-
-    .toggle-switch {
-      background: var(--rose-pastel-dark);
-      border: 1.5px solid var(--rose-gold-light);
-      border-radius: 14px;
-      width: 52px;
-      min-width: 52px;
-      height: 30px;
-      cursor: pointer;
+    /* ---------- Carta da palavra ---------- */
+    .card {
       position: relative;
-      transition: all 0.4s ease;
+      background: linear-gradient(168deg, #FFFDFC 0%, #FDF7F4 55%, var(--blush) 100%);
+      border: 1px solid var(--rose);
+      border-radius: 3px;
+      padding: 30px 24px 26px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 2px rgba(140,107,58,0.05), 0 14px 34px -22px rgba(112,80,70,0.35);
     }
 
-    .toggle-switch.active {
-      background: linear-gradient(135deg, var(--rose-gold) 0%, var(--rose-gold-dark) 100%);
-      border-color: var(--rose-gold-dark);
+    .card::before {
+      content: ''; position: absolute; inset: 7px;
+      border: 1px solid rgba(176,141,87,0.26);
+      border-radius: 1px; pointer-events: none;
     }
 
-    .toggle-knob {
-      position: absolute;
-      width: 26px;
-      height: 26px;
-      background: #FFFFFF;
-      border-radius: 50%;
-      top: 2px;
-      left: 2px;
-      transition: left 0.4s ease;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .card-head {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 16px;
     }
 
-    .toggle-switch.active .toggle-knob { left: 24px; }
+    .card-head .dash { flex: 1; height: 1px; background: var(--rose-deep); opacity: 0.55; max-width: 46px; }
 
-    .install-btn {
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1.5px solid var(--rose-gold-dark);
-      background: linear-gradient(135deg, var(--rose-gold) 0%, var(--rose-gold-dark) 100%);
-      color: #FFFFFF;
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      white-space: nowrap;
+    .theme-tag { font-size: 8.5px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--mauve); }
+
+    .word {
+      font-family: var(--serif);
+      font-size: clamp(34px, 10.5vw, 46px);
+      font-weight: 500; line-height: 1.12; text-align: center;
+      letter-spacing: 0.2px; text-wrap: balance;
     }
 
-    .install-btn:active { transform: scale(0.97); }
+    .word-tr {
+      font-family: var(--serif); font-style: italic; font-size: 17px;
+      text-align: center; color: var(--ink-soft); margin-top: 7px;
+    }
 
-    .words-list { display: flex; flex-direction: column; gap: 10px; }
+    .example {
+      margin: 22px 0 20px; padding: 17px 18px 16px;
+      background: rgba(231,210,205,0.34);
+      border-left: 2px solid var(--gold);
+      border-radius: 1px;
+    }
 
-    .word-item {
-      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
-      border: 1.5px solid var(--rose-gold-light);
-      border-radius: 14px;
-      padding: 14px 16px;
-      cursor: pointer;
+    .example-label { font-size: 8.5px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--gold-deep); }
+
+    .example-src {
+      font-family: var(--serif); font-size: 18px; font-style: italic;
+      line-height: 1.55; margin-top: 9px;
+    }
+
+    .example-tr {
+      font-size: 12.5px; line-height: 1.55; color: var(--ink-soft);
+      margin-top: 9px; padding-top: 9px; border-top: 1px solid rgba(207,174,169,0.5);
+    }
+
+    /* ---------- Botões ---------- */
+    .btn {
+      display: block; width: 100%;
+      padding: 13px 16px;
+      font-family: var(--sans); font-size: 10px; font-weight: 400;
+      letter-spacing: 2.4px; text-transform: uppercase;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--rose-deep); border-radius: 2px;
+      cursor: pointer; transition: all 0.35s ease;
+    }
+
+    .btn:hover, .btn:focus-visible { border-color: var(--gold); background: rgba(176,141,87,0.06); }
+    .btn:active { transform: scale(0.99); }
+
+    .btn.done {
+      border-color: var(--gold);
+      background: linear-gradient(100deg, rgba(176,141,87,0.14), rgba(235,217,172,0.28));
+      color: var(--gold-deep);
+    }
+
+    /* ---------- Carta bloqueada ---------- */
+    .card.locked { background: linear-gradient(168deg, #FCF9F7, #F6EFEB); border-style: dashed; box-shadow: none; }
+    .card.locked::before { border-style: dashed; opacity: 0.5; }
+
+    .locked-body { text-align: center; padding: 12px 0 4px; }
+
+    .locked-time {
+      font-family: var(--serif); font-size: 32px; font-weight: 400;
+      font-variant-numeric: tabular-nums; margin: 6px 0 4px;
+    }
+
+    .locked-note { font-size: 11.5px; color: var(--ink-soft); }
+
+    .reveal {
+      margin-top: 14px; padding: 7px 15px;
+      font-family: var(--sans); font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--gold-deep); background: transparent;
+      border: 1px solid var(--rose-deep); border-radius: 999px; cursor: pointer;
       transition: all 0.3s ease;
     }
 
-    .word-item:active { background: var(--blush-pink); border-color: var(--rose-gold); transform: scale(0.98); }
+    .reveal:hover, .reveal:focus-visible { border-color: var(--gold); background: rgba(176,141,87,0.07); }
 
-    .word-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-    .word-item-title { font-size: 15px; font-weight: 600; margin: 0; color: var(--rose-gold-dark); }
-    .word-item-translation { font-size: 12px; color: var(--text-light); margin: 6px 0 0; font-style: italic; }
-    .word-item-date { font-size: 11px; color: var(--text-light); text-align: right; white-space: nowrap; }
+    /* ---------- Lista de aprendidas ---------- */
+    .learned-list { display: flex; flex-direction: column; }
 
-    .word-item-details {
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid var(--rose-gold-light);
-      display: none;
+    .learned-item {
+      padding: 15px 2px; border-bottom: 1px solid var(--hairline);
+      cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0;
+      width: 100%; text-align: left; font-family: inherit; color: inherit;
     }
 
-    .word-item-details.show { display: block; }
+    .learned-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
 
-    .word-item-details-label {
-      font-size: 11px;
-      color: var(--rose-gold);
-      margin: 0 0 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .learned-word { font-family: var(--serif); font-size: 20px; font-weight: 500; }
+    .learned-tr { font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--ink-soft); margin-top: 2px; }
+    .learned-meta { font-size: 9.5px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--mauve); white-space: nowrap; }
+
+    .learned-detail { display: none; margin-top: 12px; padding: 13px 14px; background: rgba(231,210,205,0.3); border-radius: 1px; }
+    .learned-detail.open { display: block; }
+    .learned-detail .src { font-family: var(--serif); font-style: italic; font-size: 15.5px; line-height: 1.5; }
+    .learned-detail .tr { font-size: 12px; color: var(--ink-soft); margin-top: 7px; }
+
+    .empty {
+      text-align: center; padding: 46px 24px;
+      border: 1px dashed var(--rose-deep); border-radius: 2px;
     }
 
-    .word-item-example { font-size: 14px; margin: 0; font-style: italic; color: var(--text-dark); line-height: 1.6; }
+    .empty-mark { font-family: var(--serif); font-size: 34px; color: var(--gold); }
+    .empty p { font-family: var(--serif); font-size: 16px; font-style: italic; color: var(--ink-soft); margin-top: 8px; }
 
-    .empty-state {
-      background: linear-gradient(135deg, var(--rose-pastel-dark) 0%, var(--blush-pink) 100%);
-      border-radius: 16px;
-      padding: 36px 28px;
+    /* ---------- Ajustes ---------- */
+    .field { padding: 20px 0; border-bottom: 1px solid var(--hairline); }
+    .field:first-of-type { padding-top: 4px; }
+
+    .field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
+    .field-title { font-family: var(--serif); font-size: 19px; font-weight: 500; }
+    .field-note { font-size: 11.5px; line-height: 1.5; color: var(--ink-soft); margin-top: -6px; margin-bottom: 13px; }
+
+    select, input[type="time"] {
+      width: 100%; padding: 11px 13px;
+      font-family: var(--sans); font-size: 15px; font-weight: 300; color: var(--ink);
+      background: #FFFDFC;
+      border: 1px solid var(--rose-deep); border-radius: 2px;
+      cursor: pointer;
+    }
+
+    select:focus, input[type="time"]:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(176,141,87,0.12); }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .chip {
+      padding: 8px 13px;
+      font-family: var(--sans); font-size: 10px; font-weight: 400;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--ink-soft);
+      background: transparent;
+      border: 1px solid var(--hairline); border-radius: 999px;
+      cursor: pointer; transition: all 0.3s ease;
+    }
+
+    .chip[aria-pressed="true"] {
+      color: var(--gold-deep); border-color: var(--gold);
+      background: linear-gradient(100deg, rgba(176,141,87,0.1), rgba(235,217,172,0.22));
+    }
+
+    .chip-sub { display: block; font-size: 8px; letter-spacing: 1px; opacity: 0.7; text-transform: none; margin-top: 1px; }
+
+    .segmented { display: flex; border: 1px solid var(--rose-deep); border-radius: 2px; overflow: hidden; }
+
+    .seg {
+      flex: 1; padding: 11px 4px;
+      font-family: var(--sans); font-size: 11px; letter-spacing: 1.6px;
+      background: transparent; border: 0; color: var(--ink-soft); cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .seg + .seg { border-left: 1px solid var(--hairline); }
+
+    .seg[aria-pressed="true"] {
+      color: var(--gold-deep);
+      background: linear-gradient(100deg, rgba(176,141,87,0.12), rgba(235,217,172,0.24));
+    }
+
+    .times { display: flex; flex-direction: column; gap: 10px; }
+
+    .time-row { display: flex; align-items: center; gap: 12px; }
+
+    .time-label {
+      flex-shrink: 0; width: 74px;
+      font-size: 9px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--mauve);
+    }
+
+    .switch {
+      flex-shrink: 0; position: relative;
+      width: 48px; height: 26px; border-radius: 999px;
+      background: var(--rose); border: 1px solid var(--rose-deep);
+      cursor: pointer; transition: all 0.4s ease;
+    }
+
+    .switch[aria-pressed="true"] {
+      background: linear-gradient(100deg, var(--gold), var(--gold-light));
+      border-color: var(--gold-deep);
+    }
+
+    .knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #FFFDFA; box-shadow: 0 1px 3px rgba(68,55,51,0.28);
+      transition: left 0.4s cubic-bezier(.3,.7,.3,1);
+    }
+
+    .switch[aria-pressed="true"] .knob { left: 24px; }
+
+    .colophon {
+      margin-top: 26px; padding-top: 20px;
+      border-top: 1px solid var(--hairline);
       text-align: center;
-      border: 1.5px solid var(--rose-gold-light);
     }
 
-    .empty-text { color: var(--text-dark); margin: 0; font-size: 15px; line-height: 1.7; font-weight: 500; }
+    .colophon p { font-size: 11px; line-height: 1.8; color: var(--ink-soft); }
+    .colophon .mark { font-family: var(--serif); font-size: 20px; letter-spacing: 4px; }
 
-    .about-card {
-      background: linear-gradient(135deg, #FFFFFF 0%, #FEF9FA 100%);
-      border: 1.5px solid var(--rose-gold-light);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(212, 165, 165, 0.08);
+    /* ---------- Aviso de atualização ---------- */
+    .update-bar {
+      position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+      z-index: 200; max-width: 456px; margin: 0 auto;
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 15px;
+      background: linear-gradient(120deg, #4B3C36, #5C4A41);
+      border: 1px solid var(--gold); border-radius: 3px;
+      box-shadow: 0 12px 34px -12px rgba(68,55,51,0.55);
+      animation: rise 0.45s ease both;
     }
 
-    .about-card p { font-size: 13px; color: var(--text-light); margin: 0; line-height: 1.7; }
+    .update-bar p { flex: 1; font-size: 12px; line-height: 1.45; color: #F6ECE2; }
 
-    :focus-visible { outline: 2px solid var(--rose-gold-dark); outline-offset: 2px; }
+    .update-bar button {
+      flex-shrink: 0; padding: 9px 14px;
+      font-family: var(--sans); font-size: 9.5px; letter-spacing: 1.8px; text-transform: uppercase;
+      color: #3A2E29; background: linear-gradient(100deg, var(--gold-light), #F6E9C6);
+      border: 0; border-radius: 2px; cursor: pointer;
+    }
+
+    :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
     @media (prefers-reduced-motion: reduce) {
-      * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      .gold-text { animation: none; background-position: 50% center; }
     }
   </style>
 </head>
 <body>
   <div id="root"></div>
+  <div id="update-slot"></div>
 
+  <script src="vocab.js"></script>
   <script>
-    class VocabularyApp {
-      constructor() {
-        this.selectedLanguage = this.get('selectedLanguage') || 'español';
-        this.learnedWords = JSON.parse(this.get('learnedWords') || '[]');
-        this.notificationEnabled = this.get('notificationEnabled') === 'true';
-        this.todayWord = null;
-        this.activeTab = 'today';
-        this.installPrompt = null;
+  (function () {
+    'use strict';
 
-        this.vocabularyData = {
-          español: [
-            { word: 'Serendipidad', translation: 'Serendipity', example: 'Encontré un café hermoso por serendipidad mientras caminaba.' },
-            { word: 'Nostalgia', translation: 'Nostalgia', example: 'La música me trae nostalgia de mis años universitarios.' },
-            { word: 'Melancólico', translation: 'Melancholic', example: 'El atardecer tiene un tono melancólico muy hermoso.' },
-            { word: 'Ensoñación', translation: 'Daydream', example: 'Perdí el tiempo en ensoñación durante la clase.' },
-            { word: 'Susurro', translation: 'Whisper', example: 'Escuché un susurro en la noche.' },
-            { word: 'Ensimismado', translation: 'Lost in thought', example: 'Estaba ensimismado y no escuché tu pregunta.' },
-            { word: 'Efímero', translation: 'Ephemeral', example: 'La belleza de las flores es efímera.' },
-            { word: 'Celestial', translation: 'Heavenly', example: 'El cielo tenía un color celestial al atardecer.' }
-          ],
-          english: [
-            { word: 'Serendipity', translation: 'Serendipidade', example: 'Finding that perfect book was pure serendipity.' },
-            { word: 'Ephemeral', translation: 'Efêmero', example: 'Cherry blossoms have an ephemeral beauty.' },
-            { word: 'Melancholy', translation: 'Melancolia', example: 'There is a melancholy in autumn that I find peaceful.' },
-            { word: 'Wanderlust', translation: 'Paixão por viajar', example: 'My wanderlust drives me to explore new countries.' },
-            { word: 'Eloquent', translation: 'Eloquente', example: 'Her speech was eloquent and moving.' },
-            { word: 'Serenity', translation: 'Serenidade', example: 'I find serenity in the quiet of the morning.' },
-            { word: 'Perspicacious', translation: 'Perspicaz', example: 'His perspicacious observations surprised everyone.' },
-            { word: 'Ubiquitous', translation: 'Ubíquo', example: 'Smartphones have become ubiquitous in modern society.' }
-          ],
-          french: [
-            { word: 'Flâner', translation: 'Passear sem rumo', example: 'J\'aime flâner dans les rues de Paris.' },
-            { word: 'Dépaysement', translation: 'Sensação de estar fora do lugar', example: 'J\'ai ressenti un dépaysement en arrivant à Tokyo.' },
-            { word: 'Mélancolie', translation: 'Melancolia', example: 'La mélancolie de l\'automne est captivante.' },
-            { word: 'Sérendipité', translation: 'Serendipidade', example: 'C\'est par sérendipité que nous nous sommes rencontrés.' },
-            { word: 'Bienveillance', translation: 'Benevolência', example: 'Elle traite tout le monde avec bienveillance.' },
-            { word: 'Lumière', translation: 'Luz', example: 'La lumière du matin est magnifique.' },
-            { word: 'Éphémère', translation: 'Efêmero', example: 'La beauté des fleurs est éphémère.' },
-            { word: 'Chuchoter', translation: 'Sussurrar', example: 'Il aime chuchoter des secrets à son frère.' }
-          ],
-          portuguese: [
-            { word: 'Saudade', translation: 'Longing/Nostalgia', example: 'Sinto saudade do Brasil quando estou longe.' },
-            { word: 'Melancolia', translation: 'Melancholy', example: 'A melancolia toma conta no outono.' },
-            { word: 'Serendipidade', translation: 'Serendipity', example: 'Foi por serendipidade que encontrei meu melhor amigo.' },
-            { word: 'Efêmero', translation: 'Ephemeral', example: 'A beleza das flores de cerejeira é efêmera.' },
-            { word: 'Nostalgia', translation: 'Nostalgia', example: 'A nostalgia da infância vem em forma de música.' },
-            { word: 'Ensimesmado', translation: 'Lost in thought', example: 'Ele estava ensimesmado e não ouviu minha pergunta.' },
-            { word: 'Deslumbramento', translation: 'Amazement', example: 'Olhei com deslumbramento para as estrelas.' },
-            { word: 'Alvorecer', translation: 'Dawn', example: 'Acordamos cedo para ver o alvorecer na praia.' }
-          ]
-        };
+    var DEFAULT_TIMES = { 1: ['09:00'], 2: ['09:00', '19:00'], 3: ['08:00', '13:00', '20:00'] };
+    var SLOT_NAMES = ['Manhã', 'Tarde', 'Noite'];
 
-        this.init();
-      }
-
-      get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
-      set(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
-
-      init() {
-        this.setDailyWord();
-        this.render();
-        this.registerServiceWorker();
-        this.watchInstallPrompt();
-      }
-
-      registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(() => {});
-          });
-        }
-      }
-
-      watchInstallPrompt() {
-        window.addEventListener('beforeinstallprompt', event => {
-          event.preventDefault();
-          this.installPrompt = event;
-          this.render();
-        });
-        window.addEventListener('appinstalled', () => {
-          this.installPrompt = null;
-          this.render();
-        });
-      }
-
-      isStandalone() {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-      }
-
-      isIOS() {
-        return /iphone|ipad|ipod/i.test(navigator.userAgent);
-      }
-
-      async installApp() {
-        if (!this.installPrompt) return;
-        this.installPrompt.prompt();
-        await this.installPrompt.userChoice;
-        this.installPrompt = null;
-        this.render();
-      }
-
-      setDailyWord() {
-        const today = new Date().toDateString();
-        const lastDate = this.get('lastWordDate');
-        const words = this.vocabularyData[this.selectedLanguage];
-
-        if (lastDate !== today) {
-          this.todayWord = words[Math.floor(Math.random() * words.length)];
-          this.set('todayWord', JSON.stringify(this.todayWord));
-          this.set('lastWordDate', today);
-        } else {
-          const saved = this.get('todayWord');
-          this.todayWord = saved ? JSON.parse(saved) : words[0];
-        }
-      }
-
-      markAsLearned() {
-        if (!this.todayWord) return;
-        const isLearned = this.learnedWords.some(w => w.word === this.todayWord.word);
-        if (isLearned) {
-          this.learnedWords = this.learnedWords.filter(w => w.word !== this.todayWord.word);
-        } else {
-          this.learnedWords.push({ ...this.todayWord, learnedDate: new Date().toLocaleDateString('pt-BR') });
-        }
-        this.set('learnedWords', JSON.stringify(this.learnedWords));
-        this.render();
-      }
-
-      async toggleNotifications() {
-        this.notificationEnabled = !this.notificationEnabled;
-        this.set('notificationEnabled', this.notificationEnabled);
-        if (this.notificationEnabled && 'Notification' in window && Notification.permission === 'default') {
-          try { await Notification.requestPermission(); } catch (e) {}
-        }
-        this.render();
-      }
-
-      changeLanguage(lang) {
-        this.selectedLanguage = lang;
-        this.set('selectedLanguage', lang);
-        this.set('lastWordDate', '');
-        this.setDailyWord();
-        this.render();
-      }
-
-      changeTab(tab) {
-        this.activeTab = tab;
-        this.render();
-      }
-
-      toggleWordDetails(word) {
-        const details = document.querySelector('[data-word-details="' + word + '"]');
-        if (details) details.classList.toggle('show');
-      }
-
-      async sendNotification() {
-        if (!this.todayWord || !('Notification' in window)) return;
-
-        let permission = Notification.permission;
-        if (permission === 'default') {
-          try { permission = await Notification.requestPermission(); } catch (e) { return; }
-        }
-        if (permission !== 'granted') return;
-
-        const payload = {
-          type: 'show-notification',
-          title: 'Palavra do Dia: ' + this.todayWord.word,
-          body: this.todayWord.example
-        };
-
-        try {
-          const registration = await navigator.serviceWorker.ready;
-          registration.showNotification(payload.title, {
-            body: payload.body,
-            icon: 'icon-192.png',
-            badge: 'icon-192.png',
-            tag: 'vocabulary-daily'
-          });
-        } catch (e) {
-          try { new Notification(payload.title, { body: payload.body, tag: 'vocabulary-daily' }); } catch (err) {}
-        }
-      }
-
-      escape(text) {
-        return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      }
-
-      installSection() {
-        if (this.isStandalone()) {
-          return '<div class="install-card"><div>' +
-                 '<p class="toggle-label">✓ App instalado</p>' +
-                 '<p class="toggle-desc">Você está usando o Palavra do Dia direto da tela inicial.</p>' +
-                 '</div></div>';
-        }
-
-        if (this.installPrompt) {
-          return '<div class="install-card"><div>' +
-                 '<p class="toggle-label">Instalar na tela inicial</p>' +
-                 '<p class="toggle-desc">Abre em tela cheia e funciona sem internet.</p>' +
-                 '</div>' +
-                 '<button class="install-btn" onclick="app.installApp()">Instalar</button>' +
-                 '</div>';
-        }
-
-        if (this.isIOS()) {
-          return '<div class="install-card"><div>' +
-                 '<p class="toggle-label">Instalar na tela inicial</p>' +
-                 '<p class="toggle-desc">No Safari: toque em Compartilhar (⬆️) e escolha "Adicionar à Tela de Início".</p>' +
-                 '</div></div>';
-        }
-
-        return '<div class="install-card"><div>' +
-               '<p class="toggle-label">Instalar na tela inicial</p>' +
-               '<p class="toggle-desc">No Chrome do celular: menu (⋮) → "Adicionar à tela inicial".</p>' +
-               '</div></div>';
-      }
-
-      render() {
-        const root = document.getElementById('root');
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-        const stats = {
-          totalLearned: this.learnedWords.length,
-          thisWeek: this.learnedWords.filter(w => {
-            const parts = String(w.learnedDate || '').split('/');
-            const wordDate = parts.length === 3
-              ? new Date(parts[2], parts[1] - 1, parts[0])
-              : new Date(w.learnedDate);
-            return wordDate >= oneWeekAgo;
-          }).length
-        };
-
-        const isLearned = this.todayWord && this.learnedWords.some(w => w.word === this.todayWord.word);
-
-        root.innerHTML = `
-          <header>
-            <div class="header-top">
-              <h1>Palavra do Dia</h1>
-              <button class="bell-btn" onclick="app.sendNotification()" title="Ver a palavra como notificação" aria-label="Ver a palavra como notificação">🔔</button>
-            </div>
-            <div class="tabs">
-              <button class="tab ${this.activeTab === 'today' ? 'active' : ''}" onclick="app.changeTab('today')">Hoje</button>
-              <button class="tab ${this.activeTab === 'learned' ? 'active' : ''}" onclick="app.changeTab('learned')">Aprendidas (${this.learnedWords.length})</button>
-              <button class="tab ${this.activeTab === 'settings' ? 'active' : ''}" onclick="app.changeTab('settings')">Ajustes</button>
-            </div>
-          </header>
-
-          <div class="container">
-            <div class="tab-content ${this.activeTab === 'today' ? 'active' : ''}">
-              <div class="section">
-                <div class="stats">
-                  <div class="stat-card">
-                    <p class="stat-label">Total Aprendido</p>
-                    <p class="stat-number">${stats.totalLearned}</p>
-                  </div>
-                  <div class="stat-card">
-                    <p class="stat-label">Esta Semana</p>
-                    <p class="stat-number">${stats.thisWeek}</p>
-                  </div>
-                </div>
-              </div>
-
-              ${this.todayWord ? `
-                <div class="word-card">
-                  <p class="word-label">✨ Palavra do Dia</p>
-                  <h2 class="word-title">${this.escape(this.todayWord.word)}</h2>
-                  <p class="word-translation">${this.escape(this.todayWord.translation)}</p>
-
-                  <div class="example-box">
-                    <p class="example-label">💭 Exemplo</p>
-                    <p class="example-text">"${this.escape(this.todayWord.example)}"</p>
-                  </div>
-
-                  <button class="btn ${isLearned ? 'primary' : ''}" onclick="app.markAsLearned()">
-                    ${isLearned ? '✓ Já aprendi' : 'Marcar como aprendida'}
-                  </button>
-                </div>
-              ` : ''}
-            </div>
-
-            <div class="tab-content ${this.activeTab === 'learned' ? 'active' : ''}">
-              ${this.learnedWords.length === 0 ? `
-                <div class="empty-state">
-                  <p class="empty-text">💫 Ainda nenhuma palavra aprendida.<br/>Comece marcando a palavra do dia!</p>
-                </div>
-              ` : `
-                <div class="words-list">
-                  ${[...this.learnedWords].reverse().map(word => `
-                    <div class="word-item" onclick="app.toggleWordDetails('${this.escape(word.word)}')">
-                      <div class="word-item-header">
-                        <div>
-                          <p class="word-item-title">${this.escape(word.word)}</p>
-                          <p class="word-item-translation">${this.escape(word.translation)}</p>
-                        </div>
-                        <div class="word-item-date">${this.escape(word.learnedDate || '')}</div>
-                      </div>
-                      <div class="word-item-details" data-word-details="${this.escape(word.word)}">
-                        <p class="word-item-details-label">Exemplo:</p>
-                        <p class="word-item-example">"${this.escape(word.example)}"</p>
-                      </div>
-                    </div>
-                  `).join('')}
-                </div>
-              `}
-            </div>
-
-            <div class="tab-content ${this.activeTab === 'settings' ? 'active' : ''}">
-              <div class="section">
-                <p class="section-title">📱 App</p>
-                ${this.installSection()}
-              </div>
-
-              <div class="section">
-                <p class="section-title">🌍 Idioma</p>
-                <div class="form-group">
-                  <select onchange="app.changeLanguage(this.value)" aria-label="Idioma do vocabulário">
-                    <option value="español" ${this.selectedLanguage === 'español' ? 'selected' : ''}>Español</option>
-                    <option value="english" ${this.selectedLanguage === 'english' ? 'selected' : ''}>English</option>
-                    <option value="french" ${this.selectedLanguage === 'french' ? 'selected' : ''}>Français</option>
-                    <option value="portuguese" ${this.selectedLanguage === 'portuguese' ? 'selected' : ''}>Português</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="section">
-                <p class="section-title">🔔 Notificações</p>
-                <div class="toggle-card">
-                  <div>
-                    <p class="toggle-label">Permitir notificações</p>
-                    <p class="toggle-desc">${this.notificationEnabled ? '✓ Permitidas — toque no sino para ver a palavra como notificação' : 'Desativadas'}</p>
-                  </div>
-                  <button class="toggle-switch ${this.notificationEnabled ? 'active' : ''}" onclick="app.toggleNotifications()" aria-label="Permitir notificações">
-                    <div class="toggle-knob"></div>
-                  </button>
-                </div>
-              </div>
-
-              <div class="section">
-                <p class="section-title">ℹ️ Sobre</p>
-                <div class="about-card">
-                  <p>📚 <strong>Palavra do Dia</strong><br/>Aprenda uma palavra nova todos os dias em múltiplos idiomas.<br/><br/>Versão 2.0 · Design Rosé Pastel ✨<br/>Funciona offline depois da primeira abertura.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
+    function hashStr(s) {
+      var h = 2166136261;
+      for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return h >>> 0;
     }
 
-    const app = new VocabularyApp();
+    function mulberry32(a) {
+      return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        var t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function shuffled(arr, rnd) {
+      var a = arr.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(rnd() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function todayKey() {
+      var d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function minutesNow() {
+      var d = new Date();
+      return d.getHours() * 60 + d.getMinutes();
+    }
+
+    function toMinutes(hhmm) {
+      var p = String(hhmm || '00:00').split(':');
+      return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
+    }
+
+    function themeById(id) {
+      for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i];
+      return null;
+    }
+
+    var App = {
+      settings: null,
+      learned: [],
+      tab: 'today',
+      openDetail: null,
+      notified: {},
+      revealed: {},
+
+      get: function (k, fb) {
+        try { var v = localStorage.getItem(k); return v === null ? fb : v; } catch (e) { return fb; }
+      },
+      set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+
+      loadSettings: function () {
+        var raw = this.get('settings_v2', null);
+        var s = null;
+        if (raw) { try { s = JSON.parse(raw); } catch (e) { s = null; } }
+        if (!s) {
+          s = {
+            language: 'italiano',
+            themes: THEMES.map(function (t) { return t.id; }),
+            perDay: 1,
+            mode: 'varied',
+            times: DEFAULT_TIMES[1].slice(),
+            notify: false
+          };
+        }
+        if (!VOCAB[s.language]) s.language = 'italiano';
+        if (!Array.isArray(s.themes) || !s.themes.length) s.themes = THEMES.map(function (t) { return t.id; });
+        if ([1, 2, 3].indexOf(s.perDay) === -1) s.perDay = 1;
+        if (!Array.isArray(s.times) || s.times.length !== s.perDay) s.times = DEFAULT_TIMES[s.perDay].slice();
+        this.settings = s;
+      },
+
+      saveSettings: function () {
+        this.set('settings_v2', JSON.stringify(this.settings));
+      },
+
+      availableThemes: function () {
+        var lang = VOCAB[this.settings.language];
+        return this.settings.themes.filter(function (id) {
+          return lang[id] && lang[id].length;
+        });
+      },
+
+      picksForToday: function () {
+        var s = this.settings;
+        var lang = VOCAB[s.language];
+        var avail = this.availableThemes();
+        if (!avail.length) return [];
+
+        var seed = hashStr(todayKey() + '|' + s.language + '|' + s.perDay + '|' + s.mode + '|' + s.themes.join(','));
+        var rnd = mulberry32(seed);
+        var picks = [];
+
+        if (s.mode === 'same' || avail.length === 1) {
+          var theme = avail[Math.floor(rnd() * avail.length)];
+          var order = shuffled(lang[theme].map(function (_, i) { return i; }), rnd);
+          for (var i = 0; i < s.perDay; i++) picks.push({ theme: theme, idx: order[i % order.length] });
+        } else {
+          var themeOrder = shuffled(avail, rnd);
+          for (var j = 0; j < s.perDay; j++) {
+            var th = themeOrder[j % themeOrder.length];
+            var pool = shuffled(lang[th].map(function (_, i) { return i; }), rnd);
+            picks.push({ theme: th, idx: pool[0] });
+          }
+        }
+        return picks;
+      },
+
+      entry: function (pick) {
+        var e = VOCAB[this.settings.language][pick.theme][pick.idx];
+        return { word: e[0], tr: e[1], ex: e[2], exTr: e[3], theme: pick.theme };
+      },
+
+      isUnlocked: function (i) {
+        if (this.revealed[todayKey() + '#' + i]) return true;
+        return minutesNow() >= toMinutes(this.settings.times[i]);
+      },
+
+      revealNow: function (i) {
+        this.revealed[todayKey() + '#' + i] = true;
+        this.set('revealed', JSON.stringify(this.revealed));
+        this.render();
+      },
+
+      isLearned: function (word) {
+        for (var i = 0; i < this.learned.length; i++) if (this.learned[i].word === word) return true;
+        return false;
+      },
+
+      toggleLearned: function (i) {
+        var e = this.entry(this.picksForToday()[i]);
+        if (this.isLearned(e.word)) {
+          this.learned = this.learned.filter(function (x) { return x.word !== e.word; });
+        } else {
+          e.lang = this.settings.language;
+          e.date = new Date().toLocaleDateString('pt-BR');
+          this.learned.push(e);
+        }
+        this.set('learned_v2', JSON.stringify(this.learned));
+        this.render();
+      },
+
+      /* ---------- Notificações ---------- */
+      notify: function (i) {
+        var picks = this.picksForToday();
+        if (!picks[i] || !('Notification' in window)) return;
+        var e = this.entry(picks[i]);
+        var title = 'Palavra do dia · ' + e.word;
+        var body = e.tr + ' — ' + e.ex;
+        try {
+          if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+            navigator.serviceWorker.ready.then(function (reg) {
+              reg.showNotification(title, { body: body, icon: 'icon-192.png', badge: 'icon-192.png', tag: 'palavra-' + i });
+            }).catch(function () { new Notification(title, { body: body }); });
+          } else {
+            new Notification(title, { body: body });
+          }
+        } catch (err) {}
+      },
+
+      askNotify: function () {
+        var self = this;
+        if (!('Notification' in window)) return Promise.resolve('unsupported');
+        if (Notification.permission === 'granted') return Promise.resolve('granted');
+        return Notification.requestPermission().then(function (p) {
+          if (p !== 'granted') { self.settings.notify = false; self.saveSettings(); self.render(); }
+          return p;
+        }).catch(function () { return 'error'; });
+      },
+
+      tick: function () {
+        if (!this.settings.notify) return;
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        var day = todayKey();
+        var now = minutesNow();
+        for (var i = 0; i < this.settings.perDay; i++) {
+          var key = day + '#' + i;
+          if (this.notified[key]) continue;
+          var t = toMinutes(this.settings.times[i]);
+          if (now >= t && now - t < 90) { this.notified[key] = true; this.notify(i); }
+        }
+        this.set('notified', JSON.stringify(this.notified));
+      },
+
+      /* ---------- Ações da interface ---------- */
+      setTab: function (t) { this.tab = t; this.render(); },
+
+      setLanguage: function (v) { this.settings.language = v; this.saveSettings(); this.render(); },
+
+      toggleTheme: function (id) {
+        var s = this.settings;
+        var i = s.themes.indexOf(id);
+        if (i === -1) s.themes.push(id);
+        else if (s.themes.length > 1) s.themes.splice(i, 1);
+        this.saveSettings(); this.render();
+      },
+
+      setPerDay: function (n) {
+        this.settings.perDay = n;
+        this.settings.times = DEFAULT_TIMES[n].slice();
+        this.saveSettings(); this.render();
+      },
+
+      setMode: function (m) { this.settings.mode = m; this.saveSettings(); this.render(); },
+
+      setTime: function (i, v) {
+        if (!v) return;
+        this.settings.times[i] = v;
+        this.saveSettings(); this.render();
+      },
+
+      toggleNotify: function () {
+        var self = this;
+        this.settings.notify = !this.settings.notify;
+        this.saveSettings();
+        if (this.settings.notify) this.askNotify().then(function () { self.render(); });
+        else this.render();
+      },
+
+      toggleDetail: function (i) {
+        this.openDetail = this.openDetail === i ? null : i;
+        this.render();
+      },
+
+      /* ---------- Telas ---------- */
+      todayPanel: function () {
+        var self = this;
+        var s = this.settings;
+        var picks = this.picksForToday();
+        var week = this.learned.filter(function (w) {
+          var p = String(w.date || '').split('/');
+          if (p.length !== 3) return false;
+          var d = new Date(p[2], p[1] - 1, p[0]);
+          var ago = new Date(); ago.setDate(ago.getDate() - 7);
+          return d >= ago;
+        }).length;
+
+        var html =
+          '<div class="ledger">' +
+            '<div class="ledger-cell"><div class="eyebrow">No total</div><div class="ledger-n">' + this.learned.length + '</div></div>' +
+            '<div class="ledger-cell"><div class="eyebrow">Na semana</div><div class="ledger-n">' + week + '</div></div>' +
+            '<div class="ledger-cell"><div class="eyebrow">Por dia</div><div class="ledger-n">' + s.perDay + '</div></div>' +
+          '</div>';
+
+        if (!picks.length) {
+          return html + '<div class="empty"><div class="empty-mark">&#10086;</div><p>Nenhum tema escolhido.<br>Selecione ao menos um em Ajustes.</p></div>';
+        }
+
+        picks.forEach(function (p, i) {
+          var e = self.entry(p);
+          var th = themeById(p.theme);
+          var themeLabel = s.language === 'italiano' ? th.it : th.pt;
+
+          if (!self.isUnlocked(i)) {
+            html +=
+              '<article class="card locked">' +
+                '<div class="card-head"><span class="dash"></span><span class="theme-tag">' + esc(themeLabel) + '</span><span class="dash"></span></div>' +
+                '<div class="locked-body">' +
+                  '<div class="eyebrow">' + esc(SLOT_NAMES[i] || ('Palavra ' + (i + 1))) + '</div>' +
+                  '<div class="locked-time">' + esc(s.times[i]) + '</div>' +
+                  '<p class="locked-note">A palavra se revela nesse horário.</p>' +
+                  '<button class="reveal" data-act="reveal" data-i="' + i + '">Revelar agora</button>' +
+                '</div>' +
+              '</article>';
+            return;
+          }
+
+          var done = self.isLearned(e.word);
+          html +=
+            '<article class="card">' +
+              '<div class="card-head"><span class="dash"></span><span class="theme-tag">' + esc(themeLabel) + ' &middot; ' + esc(s.times[i]) + '</span><span class="dash"></span></div>' +
+              '<h2 class="word gold-text">' + esc(e.word) + '</h2>' +
+              '<p class="word-tr">' + esc(e.tr) + '</p>' +
+              '<div class="example">' +
+                '<div class="example-label">Exemplo</div>' +
+                '<p class="example-src">' + esc(e.ex) + '</p>' +
+                '<p class="example-tr">' + esc(e.exTr) + '</p>' +
+              '</div>' +
+              '<button class="btn' + (done ? ' done' : '') + '" data-act="learn" data-i="' + i + '">' +
+                (done ? 'Aprendida' : 'Marcar como aprendida') +
+              '</button>' +
+            '</article>';
+        });
+
+        return html;
+      },
+
+      learnedPanel: function () {
+        var self = this;
+        if (!this.learned.length) {
+          return '<div class="empty"><div class="empty-mark">&#10086;</div><p>Sua coleção começa<br>com a palavra de hoje.</p></div>';
+        }
+        var html = '<div class="learned-list">';
+        this.learned.slice().reverse().forEach(function (w, i) {
+          var th = themeById(w.theme);
+          var label = th ? (w.lang === 'italiano' ? th.it : th.pt) : '';
+          html +=
+            '<button class="learned-item" data-act="detail" data-i="' + i + '">' +
+              '<div class="learned-row">' +
+                '<div><div class="learned-word">' + esc(w.word) + '</div>' +
+                '<div class="learned-tr">' + esc(w.tr) + '</div></div>' +
+                '<div class="learned-meta">' + esc(label) + '<br>' + esc(w.date || '') + '</div>' +
+              '</div>' +
+              '<div class="learned-detail' + (self.openDetail === i ? ' open' : '') + '">' +
+                '<p class="src">' + esc(w.ex) + '</p>' +
+                '<p class="tr">' + esc(w.exTr || '') + '</p>' +
+              '</div>' +
+            '</button>';
+        });
+        return html + '</div>';
+      },
+
+      settingsPanel: function () {
+        var s = this.settings;
+        var html = '';
+
+        // Idioma
+        html +=
+          '<div class="field">' +
+            '<div class="field-head"><div class="field-title">Idioma</div></div>' +
+            '<select data-act="lang" aria-label="Idioma">' +
+              Object.keys(VOCAB).map(function (k) {
+                return '<option value="' + k + '"' + (s.language === k ? ' selected' : '') + '>' + esc(VOCAB[k].label) + '</option>';
+              }).join('') +
+            '</select>' +
+          '</div>';
+
+        // Temas
+        var lang = VOCAB[s.language];
+        html +=
+          '<div class="field">' +
+            '<div class="field-head"><div class="field-title">Temas</div></div>' +
+            '<p class="field-note">As palavras vêm apenas dos temas escolhidos.</p>' +
+            '<div class="chips">' +
+              THEMES.map(function (t) {
+                var has = lang[t.id] && lang[t.id].length;
+                if (!has) return '';
+                var on = s.themes.indexOf(t.id) !== -1;
+                var main = s.language === 'italiano' ? t.it : t.pt;
+                var sub = s.language === 'italiano' ? t.pt : '';
+                return '<button class="chip" aria-pressed="' + on + '" data-act="theme" data-id="' + t.id + '">' +
+                  esc(main) + (sub ? '<span class="chip-sub">' + esc(sub) + '</span>' : '') + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>';
+
+        // Intensidade
+        html +=
+          '<div class="field">' +
+            '<div class="field-head"><div class="field-title">Palavras por dia</div></div>' +
+            '<div class="segmented">' +
+              [1, 2, 3].map(function (n) {
+                return '<button class="seg" aria-pressed="' + (s.perDay === n) + '" data-act="perday" data-n="' + n + '">' + n + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>';
+
+        // Distribuição por tema
+        if (s.perDay > 1) {
+          html +=
+            '<div class="field">' +
+              '<div class="field-head"><div class="field-title">Distribuição</div></div>' +
+              '<p class="field-note">Como os temas se dividem entre as palavras do dia.</p>' +
+              '<div class="segmented">' +
+                '<button class="seg" aria-pressed="' + (s.mode === 'varied') + '" data-act="mode" data-m="varied">Um tema cada</button>' +
+                '<button class="seg" aria-pressed="' + (s.mode === 'same') + '" data-act="mode" data-m="same">Mesmo tema</button>' +
+              '</div>' +
+            '</div>';
+        }
+
+        // Horários
+        html +=
+          '<div class="field">' +
+            '<div class="field-head"><div class="field-title">Horários</div></div>' +
+            '<p class="field-note">Cada palavra se revela no horário marcado.</p>' +
+            '<div class="times">' +
+              s.times.map(function (t, i) {
+                return '<div class="time-row">' +
+                  '<span class="time-label">' + esc(SLOT_NAMES[i] || ('Palavra ' + (i + 1))) + '</span>' +
+                  '<input type="time" value="' + esc(t) + '" data-act="time" data-i="' + i + '" aria-label="Horário ' + (i + 1) + '">' +
+                '</div>';
+              }).join('') +
+            '</div>' +
+          '</div>';
+
+        // Notificações
+        var perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+        var note = 'O aviso chega enquanto o app estiver aberto. Alerta com o app fechado exige um servidor de notificações, que este site não usa.';
+        if (perm === 'denied') note = 'As notificações estão bloqueadas nas permissões do navegador para este site.';
+        if (perm === 'unsupported') note = 'Este navegador não oferece notificações.';
+
+        html +=
+          '<div class="field">' +
+            '<div class="field-head">' +
+              '<div class="field-title">Notificações</div>' +
+              '<button class="switch" aria-pressed="' + (!!s.notify) + '" data-act="notify" aria-label="Notificações"><span class="knob"></span></button>' +
+            '</div>' +
+            '<p class="field-note" style="margin-bottom:0">' + esc(note) + '</p>' +
+          '</div>';
+
+        html +=
+          '<div class="colophon">' +
+            '<div class="mark gold-text">&#10086;</div>' +
+            '<p>Palavra do Dia<br>Funciona sem internet depois da primeira visita.</p>' +
+          '</div>';
+
+        return html;
+      },
+
+      render: function () {
+        var s = this.settings;
+        var panel = this.tab === 'today' ? this.todayPanel()
+                  : this.tab === 'learned' ? this.learnedPanel()
+                  : this.settingsPanel();
+
+        document.getElementById('root').innerHTML =
+          '<header>' +
+            '<div class="header-motif"></div>' +
+            '<div class="shell">' +
+              '<div class="header-inner">' +
+                '<div class="brand">' +
+                  '<div class="brand-name gold-text">Palavra do Dia</div>' +
+                  '<div class="brand-sub">' + esc(VOCAB[s.language].label) + '</div>' +
+                '</div>' +
+                '<button class="bell" data-act="ring" aria-label="Ver a palavra como notificação">&#9788;</button>' +
+              '</div>' +
+              '<nav class="tabs" role="tablist">' +
+                '<button class="tab" role="tab" aria-selected="' + (this.tab === 'today') + '" data-act="tab" data-t="today">Hoje</button>' +
+                '<button class="tab" role="tab" aria-selected="' + (this.tab === 'learned') + '" data-act="tab" data-t="learned">Coleção &middot; ' + this.learned.length + '</button>' +
+                '<button class="tab" role="tab" aria-selected="' + (this.tab === 'settings') + '" data-act="tab" data-t="settings">Ajustes</button>' +
+              '</nav>' +
+            '</div>' +
+          '</header>' +
+          '<main><div class="shell"><div class="panel active">' + panel + '</div></div></main>';
+      },
+
+      onEvent: function (ev) {
+        var el = ev.target.closest('[data-act]');
+        if (!el) return;
+        var act = el.getAttribute('data-act');
+
+        if (ev.type === 'change') {
+          if (act === 'lang') this.setLanguage(el.value);
+          if (act === 'time') this.setTime(parseInt(el.getAttribute('data-i'), 10), el.value);
+          return;
+        }
+        if (ev.type !== 'click') return;
+
+        if (act === 'tab') this.setTab(el.getAttribute('data-t'));
+        else if (act === 'learn') this.toggleLearned(parseInt(el.getAttribute('data-i'), 10));
+        else if (act === 'reveal') this.revealNow(parseInt(el.getAttribute('data-i'), 10));
+        else if (act === 'detail') this.toggleDetail(parseInt(el.getAttribute('data-i'), 10));
+        else if (act === 'theme') this.toggleTheme(el.getAttribute('data-id'));
+        else if (act === 'perday') this.setPerDay(parseInt(el.getAttribute('data-n'), 10));
+        else if (act === 'mode') this.setMode(el.getAttribute('data-m'));
+        else if (act === 'notify') this.toggleNotify();
+        else if (act === 'ring') {
+          var self = this;
+          this.askNotify().then(function (p) {
+            if (p !== 'granted') return;
+            for (var i = self.settings.perDay - 1; i >= 0; i--) {
+              if (self.isUnlocked(i)) { self.notify(i); return; }
+            }
+            self.notify(0);
+          });
+        }
+      },
+
+      start: function () {
+        var self = this;
+        this.loadSettings();
+        try { this.learned = JSON.parse(this.get('learned_v2', '[]')) || []; } catch (e) { this.learned = []; }
+        try { this.notified = JSON.parse(this.get('notified', '{}')) || {}; } catch (e) { this.notified = {}; }
+        try { this.revealed = JSON.parse(this.get('revealed', '{}')) || {}; } catch (e) { this.revealed = {}; }
+
+        this.render();
+
+        document.addEventListener('click', function (e) { self.onEvent(e); });
+        document.addEventListener('change', function (e) { self.onEvent(e); });
+
+        this.tick();
+        setInterval(function () { self.tick(); }, 30000);
+
+        // revela as palavras na virada do horário sem precisar recarregar
+        setInterval(function () { if (self.tab === 'today') self.render(); }, 60000);
+
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) { self.tick(); self.render(); }
+        });
+
+        this.registerSW();
+      },
+
+      registerSW: function () {
+        if (!('serviceWorker' in navigator)) return;
+        var self = this;
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('sw.js').then(function (reg) {
+            if (reg.waiting) self.showUpdate(reg.waiting);
+            reg.addEventListener('updatefound', function () {
+              var nw = reg.installing;
+              if (!nw) return;
+              nw.addEventListener('statechange', function () {
+                if (nw.state === 'installed' && navigator.serviceWorker.controller) self.showUpdate(nw);
+              });
+            });
+          }).catch(function () {});
+
+          var reloading = false;
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (reloading) return;
+            reloading = true;
+            window.location.reload();
+          });
+        });
+      },
+
+      showUpdate: function (worker) {
+        var slot = document.getElementById('update-slot');
+        if (slot.querySelector('.update-bar')) return;
+        var bar = document.createElement('div');
+        bar.className = 'update-bar';
+        bar.innerHTML = '<p>Uma versão nova do app está pronta.</p><button type="button">Atualizar</button>';
+        bar.querySelector('button').addEventListener('click', function () {
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        });
+        slot.appendChild(bar);
+      }
+    };
+
+    App.start();
+    window.App = App;
+  })();
   </script>
 </body>
 </html>
