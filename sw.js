@@ -1,8 +1,9 @@
 // Service worker do Palavra do Dia
 // Estratégia: cache-first com revalidação em segundo plano.
-// A nova versão só assume quando a pessoa toca em "Atualizar" no app.
+// A versão nova assume assim que termina de baixar; o app avisa a pessoa
+// com a faixa "atualização disponível" para ela recarregar quando quiser.
 
-const CACHE = 'palavra-do-dia-v2';
+const CACHE = 'palavra-do-dia-v3';
 
 const APP_SHELL = [
   './',
@@ -17,7 +18,11 @@ const APP_SHELL = [
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(APP_SHELL))
+    caches.open(CACHE)
+      .then(cache => cache.addAll(APP_SHELL))
+      // assume o controle sem esperar as abas antigas fecharem:
+      // sem isto, uma versão antiga sem o aviso de atualização ficaria presa
+      .then(() => self.skipWaiting())
   );
 });
 
